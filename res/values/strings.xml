@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">TouchBoard</string>
+    <string name="touch_pad">TOUCH PAD</string>
+    <string name="wifi_not_connected">Wifi not connected.</string>
+    <string name="get_wifi_ip_address_fail">Can not get wifi ip address.</string>
+    <string formatted="false" name="pc_server_found">PC Server found, %s:%d.</string>
+    <string  name="pc_server_not_found">PC Server not found.</string>
+
+</resources>

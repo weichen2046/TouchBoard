@@ -128,4 +128,59 @@ public class DefectWorkingThread extends Thread {
             }
         }
     } // end of public void run()
+
+    public static boolean isServer(String ip, int port) {
+        boolean serverFound = false;
+        Socket socket = new Socket();
+        SocketAddress remoteAddr = new InetSocketAddress(ip, port);
+        try {
+            socket.connect(remoteAddr, 1000);
+        } catch (IOException ioEx) {
+            Log.d(LOG_TAG,
+                    "Exception when try connect: " + ioEx.getMessage());
+        }
+        if (socket.isConnected()) {
+            try {
+                // 1 send detect message to server
+                BufferedOutputStream out = new BufferedOutputStream(
+                        socket.getOutputStream());
+                out.write(CLIENT_DETECT_SERVER_TAG.getBytes("UTF-8"));
+                out.flush();
+
+                // 2 receive response from server
+                socket.setSoTimeout(300);
+                BufferedInputStream in = new BufferedInputStream(
+                        socket.getInputStream());
+                byte[] lenBuffer = new byte[8];
+                in.read(lenBuffer);
+                long dataLen = ByteBuffer.wrap(lenBuffer).getLong();
+                int serverTagLen = SERVER_TAG.getBytes("UTF-8").length;
+                if (dataLen == serverTagLen) {
+                    // read data bytes
+                    byte[] dataBuf = new byte[serverTagLen];
+                    in.read(dataBuf);
+                    String readTag = new String(dataBuf, "UTF-8");
+                    Log.d(LOG_TAG, "Data read: " + readTag);
+                    if (readTag.equals(SERVER_TAG)) {
+                        // ok, we find server
+                        serverFound = true;
+                    }
+                }
+            } catch (SocketException socketEx) {
+                Log.d(LOG_TAG,
+                        "Socket exceptoin: " + socketEx.getMessage());
+
+            } catch (IOException ioEx) {
+                Log.d(LOG_TAG, "IO exceptoin: " + ioEx.getMessage());
+            } finally {
+                try {
+                    socket.close();
+                } catch (IOException ioEx) {
+                    Log.d(LOG_TAG,
+                            "In isServer(...), exception occured when close socket.");
+                }
+            }
+        } // end of if (socket.isConnected())
+        return serverFound;
+    }
 }

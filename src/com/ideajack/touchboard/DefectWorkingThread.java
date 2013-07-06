@@ -63,58 +63,16 @@ public class DefectWorkingThread extends Thread {
                 Log.d(LOG_TAG,
                         "Trying to connect to "
                                 + String.format("%s:%d", connectTo, port));
-                Socket socket = new Socket();
-                SocketAddress remoteAddr = new InetSocketAddress(connectTo,
-                        port);
-                try {
-                    socket.connect(remoteAddr, 1000);
-                } catch (IOException ioEx) {
-                    Log.d(LOG_TAG,
-                            "Exception when try connect: " + ioEx.getMessage());
-                    continue;
-                }
-                if (socket.isConnected()) {
-                    try {
-                        // 1 send detect message to server
-                        BufferedOutputStream out = new BufferedOutputStream(
-                                socket.getOutputStream());
-                        out.write(CLIENT_DETECT_SERVER_TAG.getBytes("UTF-8"));
-                        out.flush();
-
-                        // 2 receive response from server
-                        socket.setSoTimeout(300);
-                        BufferedInputStream in = new BufferedInputStream(
-                                socket.getInputStream());
-                        byte[] lenBuffer = new byte[8];
-                        in.read(lenBuffer);
-                        long dataLen = ByteBuffer.wrap(lenBuffer).getLong();
-                        int serverTagLen = SERVER_TAG.getBytes("UTF-8").length;
-                        if (dataLen == serverTagLen) {
-                            // read data bytes
-                            byte[] dataBuf = new byte[serverTagLen];
-                            in.read(dataBuf);
-                            String readTag = new String(dataBuf, "UTF-8");
-                            Log.d(LOG_TAG, "Data read: " + readTag);
-                            if (readTag.equals(SERVER_TAG)) {
-                                // ok, we find server
-                                synchronized (lockObj) {
-                                    Message msg = mHandler.obtainMessage(
-                                            TouchActivity.PC_SERVER_FOUND,
-                                            port, 0, connectTo);
-                                    msg.sendToTarget();
-                                    sFoundServer = true;
-                                    break;
-                                }
-                            }
-                        }
-                    } catch (SocketException socketEx) {
-                        Log.d(LOG_TAG,
-                                "Socket exceptoin: " + socketEx.getMessage());
-
-                    } catch (IOException ioEx) {
-                        Log.d(LOG_TAG, "IO exceptoin: " + ioEx.getMessage());
+                if (isServer(connectTo, port)) {
+                    synchronized (lockObj) {
+                        Message msg = mHandler.obtainMessage(
+                                TouchActivity.PC_SERVER_FOUND, port, 0,
+                                connectTo);
+                        msg.sendToTarget();
+                        sFoundServer = true;
+                        break;
                     }
-                } // end of if(socket.isConnected())
+                }
             } // end of for (int port : portRange) {
         } // end of for (int i = mStartIP; i < end; i++)
 

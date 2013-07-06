@@ -1,6 +1,7 @@
 package com.ideajack.touchboard;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -16,6 +17,7 @@ public class DefectWorkingThread extends Thread {
 
     private static final String LOG_TAG = "DefectWorkingThread";
     private static final String SERVER_TAG = "Yes, I am server.";
+    private static final String CLIENT_DETECT_SERVER_TAG = "Are you a server.";
     private static Object lockObj = new Object();
     private static boolean sFoundServer = false;
     private static int sInterval = 0;
@@ -69,9 +71,17 @@ public class DefectWorkingThread extends Thread {
                 } catch (IOException ioEx) {
                     Log.d(LOG_TAG,
                             "Exception when try connect: " + ioEx.getMessage());
+                    continue;
                 }
                 if (socket.isConnected()) {
                     try {
+                        // 1 send detect message to server
+                        BufferedOutputStream out = new BufferedOutputStream(
+                                socket.getOutputStream());
+                        out.write(CLIENT_DETECT_SERVER_TAG.getBytes("UTF-8"));
+                        out.flush();
+
+                        // 2 receive response from server
                         socket.setSoTimeout(300);
                         BufferedInputStream in = new BufferedInputStream(
                                 socket.getInputStream());

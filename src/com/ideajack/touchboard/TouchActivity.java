@@ -69,7 +69,7 @@ public class TouchActivity extends Activity {
                 mIpAddress = (String) msg.obj;
                 Toast.makeText(TouchActivity.this,
                         "Local wifi IP Address: " + mIpAddress,
-                        Toast.LENGTH_LONG).show();
+                        Toast.LENGTH_SHORT).show();
                 break;
             case GET_WIFI_IP_ADDRESS_FAIL:
                 Toast.makeText(TouchActivity.this,

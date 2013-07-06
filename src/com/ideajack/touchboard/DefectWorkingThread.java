@@ -96,6 +96,7 @@ public class DefectWorkingThread extends Thread {
         } catch (IOException ioEx) {
             Log.d(LOG_TAG,
                     "Exception when try connect: " + ioEx.getMessage());
+            return serverFound;
         }
         if (socket.isConnected()) {
             try {

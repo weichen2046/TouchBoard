@@ -41,6 +41,7 @@ public class TouchActivity extends Activity {
     private String mIpAddress = null;
     private ProgressDialog progressDialog;
     private boolean backKeyPressed = false;
+    private MotionEventHandler mMotionEventHandler = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,15 +49,14 @@ public class TouchActivity extends Activity {
 
         setContentView(R.layout.activity_touch);
 
-        // new Thread(mInitRunnable).start();
+        new Thread(mInitRunnable).start();
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_MOVE) {
-            Log.d(LOG_TAG, "X: " + event.getX() + " Y: " + event.getY());
+        if (mMotionEventHandler != null) {
+            mMotionEventHandler.sendMotionEvent(event);
         }
-
         return super.onTouchEvent(event);
     }
 
@@ -74,6 +74,9 @@ public class TouchActivity extends Activity {
                 mHandler.sendMessageDelayed(msg, 2 * 1000);
             } else {
                 // exit
+                if (mMotionEventHandler != null) {
+                    mMotionEventHandler.stopWork();
+                }
                 this.finish();
             }
             return true;
@@ -132,6 +135,9 @@ public class TouchActivity extends Activity {
                                         msg.arg1),
                                         Toast.LENGTH_LONG)
                                         .show();
+                // new a MotionEventhandler and start it to work
+                mMotionEventHandler = new MotionEventHandler();
+                mMotionEventHandler.startWork(msg.obj.toString(), msg.arg1);
                 break;
             case RELAY_TO_REMARK_EXIT:
                 Log.d(LOG_TAG,

@@ -7,5 +7,6 @@
     <string name="get_wifi_ip_address_fail">Can not get wifi ip address.</string>
     <string formatted="false" name="pc_server_found">PC Server found, %s:%d.</string>
     <string  name="pc_server_not_found">PC Server not found.</string>
+    <string  name="press_two_exit">Press two back key exit.</string>
 
 </resources>

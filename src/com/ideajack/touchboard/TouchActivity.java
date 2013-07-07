@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.Toast;
 /**
@@ -36,8 +37,10 @@ public class TouchActivity extends Activity {
     public static final int PC_SERVER_FOUND = 4;
     public static final int PC_SERVER_NOT_FOUND = 5;
     private static final int BEGIN_SCAN_SERVER = 6;
+    private static final int RELAY_TO_REMARK_EXIT = 7;
     private String mIpAddress = null;
     private ProgressDialog progressDialog;
+    private boolean backKeyPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +48,7 @@ public class TouchActivity extends Activity {
 
         setContentView(R.layout.activity_touch);
 
-        new Thread(mInitRunnable).start();
+        // new Thread(mInitRunnable).start();
     }
 
     @Override
@@ -55,6 +58,27 @@ public class TouchActivity extends Activity {
         }
 
         return super.onTouchEvent(event);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+        case KeyEvent.KEYCODE_BACK:
+            Log.d(LOG_TAG, "KEYCODE_BACK pressed.");
+            if (!backKeyPressed) {
+                backKeyPressed = true;
+                // make toast to notify user
+                Toast.makeText(TouchActivity.this, R.string.press_two_exit,
+                        Toast.LENGTH_SHORT).show();
+                Message msg = mHandler.obtainMessage(RELAY_TO_REMARK_EXIT);
+                mHandler.sendMessageDelayed(msg, 2 * 1000);
+            } else {
+                // exit
+                this.finish();
+            }
+            return true;
+        }
+        return (super.onKeyDown(keyCode, event));
     }
 
     private final Handler mHandler = new Handler() {
@@ -108,6 +132,13 @@ public class TouchActivity extends Activity {
                                         msg.arg1),
                                         Toast.LENGTH_LONG)
                                         .show();
+                break;
+            case RELAY_TO_REMARK_EXIT:
+                Log.d(LOG_TAG,
+                        "Remark exit to false, because in specific time, user not press back key two times.");
+                if (backKeyPressed) {
+                    backKeyPressed = false;
+                }
                 break;
             }
             super.handleMessage(msg);

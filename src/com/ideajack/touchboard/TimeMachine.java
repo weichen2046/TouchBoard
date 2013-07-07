@@ -56,6 +56,8 @@ public class TimeMachine {
         mProducer = null;
         Message msg = mMachineHandler.obtainMessage(CLOSE_TUNNEL_SOCKET);
         msg.sendToTarget();
+        mMachineHandler.getLooper().quit();
+        mMachineHandler = null;
     }
 
     public void transmit(byte[] data) {

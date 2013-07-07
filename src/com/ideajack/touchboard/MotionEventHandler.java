@@ -32,6 +32,8 @@ public class MotionEventHandler {
             mTimeMachine.stop();
             mTimeMachine = null;
         }
+        mWorkingHandler.getLooper().quit();
+        mWorkingHandler = null;
     }
 
     public void sendMotionEvent(MotionEvent event) {

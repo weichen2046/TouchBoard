@@ -61,6 +61,8 @@ public class TimeMachine {
     }
 
     public void transmit(byte[] data) {
+        if (data == null || data.length == 0)
+            return;
         Message msg = mMachineHandler.obtainMessage(TIME_TUNNEL_TRANSMIT);
         msg.obj = data;
         msg.sendToTarget();
@@ -75,10 +77,10 @@ public class TimeMachine {
         public void handleMessage(Message msg) {
             switch (msg.what) {
             case NEW_TUNNEL_SOCKET:
-                int what = MotionEventHandler.TIME_TUNNEL_CREATE_OK;
+                int what = EventTransfer.TIME_TUNNEL_CREATE_OK;
                 if (!newTunnelSocket(mIp, mPort)) {
                     Log.d(LOG_TAG, "Can not new tunnel socket.");
-                    what = MotionEventHandler.TIME_TUNNEL_CREATE_FAIL;
+                    what = EventTransfer.TIME_TUNNEL_CREATE_FAIL;
                 }
                 if (mProducer != null) {
                     Message msgRet = mProducer.obtainMessage(what);

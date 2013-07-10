@@ -16,6 +16,7 @@ public class EventTransfer {
     public static final int MOTION_EVENT = 1;
     public static final int TIME_TUNNEL_CREATE_OK = 2;
     public static final int TIME_TUNNEL_CREATE_FAIL = 3;
+    public static final int CLICK_EVENT = 4;
     private WorkingHandler mWorkingHandler = null;
     private TimeMachine mTimeMachine = null;
 
@@ -59,6 +60,9 @@ public class EventTransfer {
                 MotionEvent event = (MotionEvent) msg.obj;
                 handleMotionEvent(event);
                 break;
+            case CLICK_EVENT:
+
+                break;
             case TIME_TUNNEL_CREATE_OK:
                 break;
             case TIME_TUNNEL_CREATE_FAIL:
@@ -73,12 +77,17 @@ public class EventTransfer {
     private byte[] serializeMotionEvent(MotionEvent event) {
         int temp = 0;
         List<Byte> result = new ArrayList<Byte>();
+        // add MotionEvent tag, 4 bytes
+        addAllBytes(result, ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+                .putInt(MOTION_EVENT).array());
         // add action, 4 bytes
-        addAllBytes(result, ByteBuffer.allocate(4).putInt(event.getAction())
+        addAllBytes(result, ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+                .putInt(event.getAction())
                 .array());
         // add pointer count, 4 bytes
         temp = event.getPointerCount();
-        addAllBytes(result, ByteBuffer.allocate(4).putInt(temp).array());
+        addAllBytes(result, ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+                .putInt(temp).array());
 
         return byteListToArray(result);
     }

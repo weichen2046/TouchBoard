@@ -32,6 +32,8 @@ public class TimeMachine {
     private static final int NEW_TUNNEL_SOCKET = 1;
     private static final int CLOSE_TUNNEL_SOCKET = 2;
     private static final int TIME_TUNNEL_TRANSMIT = 3;
+    private static final int TRANSMIT_CTRL_TAG_DATA = 1;
+    private static final int TRANSMIT_CTRL_TAG_QUIT = 0xFFFF;
     private Handler mProducer = null;
     private BufferedOutputStream out = null;
     private BufferedInputStream in = null;
@@ -56,8 +58,6 @@ public class TimeMachine {
         mProducer = null;
         Message msg = mMachineHandler.obtainMessage(CLOSE_TUNNEL_SOCKET);
         msg.sendToTarget();
-        mMachineHandler.getLooper().quit();
-        mMachineHandler = null;
     }
 
     public void transmit(byte[] data) {
@@ -91,6 +91,8 @@ public class TimeMachine {
                 break;
             case CLOSE_TUNNEL_SOCKET:
                 closeTunnelSocket();
+                mMachineHandler.getLooper().quit();
+                mMachineHandler = null;
                 break;
             case TIME_TUNNEL_TRANSMIT:
                 byte[] data = (byte[]) msg.obj;
@@ -158,6 +160,11 @@ public class TimeMachine {
     private void closeTunnelSocket() {
         if (mTunnel != null) {
             try {
+                if (out != null) {
+                    out.write(ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+                            .putInt(TRANSMIT_CTRL_TAG_QUIT).array());
+                    out.flush();
+                }
                 mTunnel.close();
             } catch (IOException ioEx) {
                 Log.d(LOG_TAG,
@@ -177,7 +184,10 @@ public class TimeMachine {
 
         if (out != null) {
             try {
-                byte[] totalLenBytes = ByteBuffer.allocate(Long.SIZE / 8)
+                out.write(ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+                        .putInt(TRANSMIT_CTRL_TAG_DATA).array());
+                byte[] totalLenBytes = ByteBuffer
+                        .allocate(ICommonConstants.LONG_BYTES)
                         .putLong(data.length).array();
                 out.write(totalLenBytes);
                 out.write(data);

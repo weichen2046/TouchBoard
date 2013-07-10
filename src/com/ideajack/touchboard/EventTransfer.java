@@ -61,7 +61,7 @@ public class EventTransfer {
                 handleMotionEvent(event);
                 break;
             case CLICK_EVENT:
-
+                handleClickEvent();
                 break;
             case TIME_TUNNEL_CREATE_OK:
                 break;
@@ -152,5 +152,12 @@ public class EventTransfer {
             break;
         }
         mTimeMachine.transmit(serializeMotionEvent(event));
+    }
+
+    private void handleClickEvent() {
+        if (mTimeMachine == null)
+            return;
+        mTimeMachine.transmit(ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+                .putInt(CLICK_EVENT).array());
     }
 }

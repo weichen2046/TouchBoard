@@ -18,6 +18,9 @@ import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.widget.Toast;
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -48,10 +51,19 @@ public class TouchActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_touch);
+        View main = this.findViewById(android.R.id.content);
+        main.setOnClickListener(mClickListener);
+        main.setOnTouchListener(mTouchListener);
 
         new Thread(mInitRunnable).start();
     }
 
+    /*
+     * When we attach one of the OnClickListener or OnTouchListener to content
+     * view. this override onTouchEvent will never be called. I don't know if
+     * attah other Listener to content view will cause the same. So, here need
+     * refect.
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (mEventTransfer != null) {
@@ -83,6 +95,31 @@ public class TouchActivity extends Activity {
         }
         return (super.onKeyDown(keyCode, event));
     }
+
+    OnClickListener mClickListener = new OnClickListener() {
+
+        @Override
+        public void onClick(View arg0) {
+            Log.d(LOG_TAG, "TouchBoard main activity clicked.");
+            if (mEventTransfer != null) {
+                mEventTransfer.sendEvent(EventTransfer.CLICK_EVENT, null);
+            }
+        }
+
+    };
+
+    OnTouchListener mTouchListener = new OnTouchListener() {
+
+        @Override
+        public boolean onTouch(View arg0, MotionEvent event) {
+            Log.d(LOG_TAG, "TouchBoard main activity MotionEvent occurred.");
+            if (mEventTransfer != null) {
+                mEventTransfer.sendEvent(EventTransfer.MOTION_EVENT, event);
+            }
+            return false;
+        }
+
+    };
 
     private final Handler mHandler = new Handler() {
         @Override

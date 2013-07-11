@@ -15,11 +15,11 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcel;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Toast;
 /**
@@ -52,7 +52,7 @@ public class TouchActivity extends Activity {
 
         setContentView(R.layout.activity_touch);
         View main = this.findViewById(android.R.id.content);
-        main.setOnClickListener(mClickListener);
+        // main.setOnClickListener(mClickListener);
         main.setOnTouchListener(mTouchListener);
 
         new Thread(mInitRunnable).start();
@@ -66,6 +66,7 @@ public class TouchActivity extends Activity {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        Log.d(LOG_TAG, "onTouchEvent, action: " + event);
         if (mEventTransfer != null) {
             mEventTransfer.sendEvent(EventTransfer.MOTION_EVENT, event);
         }
@@ -96,27 +97,41 @@ public class TouchActivity extends Activity {
         return (super.onKeyDown(keyCode, event));
     }
 
-    OnClickListener mClickListener = new OnClickListener() {
-
-        @Override
-        public void onClick(View arg0) {
-            Log.d(LOG_TAG, "TouchBoard main activity clicked.");
-            if (mEventTransfer != null) {
-                mEventTransfer.sendEvent(EventTransfer.CLICK_EVENT, null);
-            }
-        }
-
-    };
+    // OnClickListener mClickListener = new OnClickListener() {
+    //
+    // @Override
+    // public void onClick(View arg0) {
+    // Log.d(LOG_TAG, "TouchBoard main activity clicked.");
+    // if (mEventTransfer != null) {
+    // mEventTransfer.sendEvent(EventTransfer.CLICK_EVENT, null);
+    // }
+    // }
+    //
+    // };
 
     OnTouchListener mTouchListener = new OnTouchListener() {
 
         @Override
         public boolean onTouch(View arg0, MotionEvent event) {
-            Log.d(LOG_TAG, "TouchBoard main activity MotionEvent occurred.");
+            Log.d(LOG_TAG,
+                    "TouchBoard main activity MotionEvent occurred, and action: "
+                            + event.getAction() + " actionMasked: "
+                            + event.getActionMasked());
+            // recreate MotionEvent
+            Parcel p = Parcel.obtain();
+            p.writeValue(event);
+            p.setDataPosition(0);
+            MotionEvent event2 = (MotionEvent) p.readValue(MotionEvent.class
+                    .getClassLoader());
+            p.recycle();
             if (mEventTransfer != null) {
-                mEventTransfer.sendEvent(EventTransfer.MOTION_EVENT, event);
+                mEventTransfer.sendEvent(EventTransfer.MOTION_EVENT, event2);
             }
-            return false;
+            // if there return false, a Click event will always follows after
+            // ACTION_UP
+            // if there return true, seems that no need to add a OnClickListener
+            // to main conten view, so we common those lines
+            return true;
         }
 
     };

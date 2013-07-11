@@ -11,6 +11,8 @@ import android.os.Message;
 import android.util.Log;
 import android.view.MotionEvent;
 
+import com.ideajack.touchboard.utils.BytesTools;
+
 public class EventTransfer {
     private static final String LOG_TAG = "EventTransfer";
     public static final int MOTION_EVENT = 1;
@@ -44,6 +46,14 @@ public class EventTransfer {
     public void sendEvent(int id, Object param) {
         Message msg = mWorkingHandler.obtainMessage(id);
         msg.obj = param;
+        MotionEvent event = (MotionEvent) msg.obj;
+        if (event != null) {
+            Log.d(LOG_TAG, "X1 action: " + event.getAction() + " actionMasked: "
+                    + event.getActionMasked());
+            Log.d(LOG_TAG, "X1 thread id: " + Thread.currentThread().getId());
+            Log.d(LOG_TAG, "X1 thread name: "
+                    + Thread.currentThread().getName());
+        }
         msg.sendToTarget();
     }
 
@@ -58,6 +68,8 @@ public class EventTransfer {
             case MOTION_EVENT:
                 // Log.d(LOG_TAG, "MotionEventHandler, motion event arrived.");
                 MotionEvent event = (MotionEvent) msg.obj;
+                Log.d(LOG_TAG, "X2 action: " + event.getAction()
+                        + " actionMasked: " + event.getActionMasked());
                 handleMotionEvent(event);
                 break;
             case CLICK_EVENT:
@@ -89,7 +101,9 @@ public class EventTransfer {
         addAllBytes(result, ByteBuffer.allocate(ICommonConstants.INT_BYTES)
                 .putInt(temp).array());
 
-        return byteListToArray(result);
+        byte[] data = byteListToArray(result);
+        Log.d(LOG_TAG, BytesTools.ConvertArrayToString(data));
+        return data;
     }
 
     private void addAllBytes(List<Byte> holder, byte[] data) {
@@ -116,6 +130,8 @@ public class EventTransfer {
         // "Going to handle motion event, action: " + event.getAction());
         if (mTimeMachine == null)
             return;
+        Log.d(LOG_TAG, "X3 action: " + event.getAction() + " actionMasked: "
+                + event.getActionMasked());
         switch (event.getAction()) {
         case MotionEvent.ACTION_MOVE:
             Log.d(LOG_TAG, "ACTION_MOVE: " + "X: " + event.getX() + " Y: "

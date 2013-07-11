@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.ideajack.touchboard;
 
@@ -16,6 +16,8 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+
+import com.ideajack.touchboard.utils.BytesTools;
 
 /**
  * @author Chenwei
@@ -181,6 +183,8 @@ public class TimeMachine {
             Log.d(LOG_TAG, "No need to transmission.");
             return;
         }
+
+        Log.d(LOG_TAG, BytesTools.ConvertArrayToString(data));
 
         if (out != null) {
             try {

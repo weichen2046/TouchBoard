@@ -48,8 +48,8 @@ public class EventTransfer {
         msg.obj = param;
         MotionEvent event = (MotionEvent) msg.obj;
         if (event != null) {
-            Log.d(LOG_TAG, "X1 action: " + event.getAction() + " actionMasked: "
-                    + event.getActionMasked());
+            Log.d(LOG_TAG, "X1 action: " + event.getAction()
+                    + " actionMasked: " + event.getActionMasked());
             Log.d(LOG_TAG, "X1 thread id: " + Thread.currentThread().getId());
             Log.d(LOG_TAG, "X1 thread name: "
                     + Thread.currentThread().getName());
@@ -90,39 +90,25 @@ public class EventTransfer {
         int temp = 0;
         List<Byte> result = new ArrayList<Byte>();
         // add MotionEvent tag, 4 bytes
-        addAllBytes(result, ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+        BytesTools.addAllBytes(
+                result,
+                ByteBuffer.allocate(ICommonConstants.INT_BYTES)
                 .putInt(MOTION_EVENT).array());
         // add action, 4 bytes
-        addAllBytes(result, ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+        BytesTools.addAllBytes(
+                result,
+                ByteBuffer.allocate(ICommonConstants.INT_BYTES)
                 .putInt(event.getAction())
                 .array());
         // add pointer count, 4 bytes
         temp = event.getPointerCount();
-        addAllBytes(result, ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+        BytesTools.addAllBytes(result,
+                ByteBuffer.allocate(ICommonConstants.INT_BYTES)
                 .putInt(temp).array());
 
-        byte[] data = byteListToArray(result);
+        byte[] data = BytesTools.byteListToArray(result);
         Log.d(LOG_TAG, BytesTools.ConvertArrayToString(data));
         return data;
-    }
-
-    private void addAllBytes(List<Byte> holder, byte[] data) {
-        if (holder != null && data != null) {
-            for (int i = 0; i < data.length; i++) {
-                holder.add(data[i]);
-            }
-        }
-    }
-
-    private byte[] byteListToArray(List<Byte> holder) {
-        byte[] result = null;
-        if (holder != null && holder.size() != 0) {
-            result = new byte[holder.size()];
-            for (int i = 0; i < holder.size(); i++) {
-                result[i] = holder.get(i);
-            }
-        }
-        return result;
     }
 
     private void handleMotionEvent(MotionEvent event) {

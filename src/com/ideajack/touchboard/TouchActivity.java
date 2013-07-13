@@ -66,7 +66,7 @@ public class TouchActivity extends Activity {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d(LOG_TAG, "onTouchEvent, action: " + event);
+        // Log.d(LOG_TAG, "onTouchEvent, action: " + event);
         if (mEventTransfer != null) {
             mEventTransfer.sendEvent(EventTransfer.MOTION_EVENT, event);
         }
@@ -113,10 +113,10 @@ public class TouchActivity extends Activity {
 
         @Override
         public boolean onTouch(View arg0, MotionEvent event) {
-            Log.d(LOG_TAG,
-                    "TouchBoard main activity MotionEvent occurred, and action: "
-                            + event.getAction() + " actionMasked: "
-                            + event.getActionMasked());
+            // Log.d(LOG_TAG,
+            // "TouchBoard main activity MotionEvent occurred, and action: "
+            // + event.getAction() + " actionMasked: "
+            // + event.getActionMasked());
             // recreate MotionEvent
             Parcel p = Parcel.obtain();
             p.writeValue(event);

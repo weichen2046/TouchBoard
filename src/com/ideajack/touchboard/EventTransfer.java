@@ -47,13 +47,14 @@ public class EventTransfer {
         Message msg = mWorkingHandler.obtainMessage(id);
         msg.obj = param;
         MotionEvent event = (MotionEvent) msg.obj;
-        if (event != null) {
-            Log.d(LOG_TAG, "X1 action: " + event.getAction()
-                    + " actionMasked: " + event.getActionMasked());
-            Log.d(LOG_TAG, "X1 thread id: " + Thread.currentThread().getId());
-            Log.d(LOG_TAG, "X1 thread name: "
-                    + Thread.currentThread().getName());
-        }
+        // if (event != null) {
+        // Log.d(LOG_TAG, "X1 action: " + event.getAction()
+        // + " actionMasked: " + event.getActionMasked());
+        // Log.d(LOG_TAG, "X1 thread id: " +
+        // Thread.currentThread().getId());
+        // Log.d(LOG_TAG, "X1 thread name: "
+        // + Thread.currentThread().getName());
+        // }
         msg.sendToTarget();
     }
 
@@ -68,8 +69,8 @@ public class EventTransfer {
             case MOTION_EVENT:
                 // Log.d(LOG_TAG, "MotionEventHandler, motion event arrived.");
                 MotionEvent event = (MotionEvent) msg.obj;
-                Log.d(LOG_TAG, "X2 action: " + event.getAction()
-                        + " actionMasked: " + event.getActionMasked());
+                // Log.d(LOG_TAG, "X2 action: " + event.getAction()
+                // + " actionMasked: " + event.getActionMasked());
                 handleMotionEvent(event);
                 break;
             case CLICK_EVENT:
@@ -88,6 +89,12 @@ public class EventTransfer {
 
     private byte[] serializeMotionEvent(MotionEvent event) {
         int temp = 0;
+        int pointerId = -1;
+        int pointerCount = 0;
+        int historyCount = 0;
+        float pointerX = 0.0F;
+        float pointerY = 0.0F;
+
         List<Byte> result = new ArrayList<Byte>();
         // add MotionEvent tag, 4 bytes
         BytesTools.addAllBytes(
@@ -101,13 +108,95 @@ public class EventTransfer {
                 .putInt(event.getAction())
                 .array());
         // add pointer count, 4 bytes
-        temp = event.getPointerCount();
+        pointerCount = event.getPointerCount();
         BytesTools.addAllBytes(result,
                 ByteBuffer.allocate(ICommonConstants.INT_BYTES)
-                .putInt(temp).array());
+                .putInt(pointerCount).array());
+        // add masked action, 4 bytes
+        BytesTools.addAllBytes(result,
+                ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+                .putInt(event.getActionMasked()).array());
+        // add action index, 4 bytes
+        BytesTools.addAllBytes(result,
+                ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+                .putInt(event.getActionIndex()).array());
+        // add history coors, 4 bytes
+        historyCount = event.getHistorySize();
+        BytesTools.addAllBytes(
+                result,
+                ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+                .putInt(historyCount).array());
+        // add pointers data
+        for (int i = 0; i < pointerCount; i++) {
+            // add pointer id, 4 bytes
+            pointerId = event.getPointerId(i);
+            BytesTools.addAllBytes(
+                    result,
+                    ByteBuffer.allocate(ICommonConstants.INT_BYTES)
+                    .putInt(pointerId).array());
+            // add pointer x, 4 bytes
+            pointerX = event.getX(i);
+            BytesTools.addAllBytes(
+                    result,
+                    ByteBuffer.allocate(ICommonConstants.FLOAT_BYTES)
+                    .putFloat(pointerX).array());
+            // add pointer y, 4 bytes
+            pointerY = event.getY(i);
+            BytesTools.addAllBytes(
+                    result,
+                    ByteBuffer.allocate(ICommonConstants.FLOAT_BYTES)
+                    .putFloat(pointerY).array());
+            for (int j = 0; j < historyCount; j++) {
+                // 4 bytes
+                pointerX = event.getHistoricalX(i, j);
+                BytesTools.addAllBytes(result,
+                        ByteBuffer.allocate(ICommonConstants.FLOAT_BYTES)
+                        .putFloat(pointerX).array());
+                // 4 bytes
+                pointerY = event.getHistoricalY(i, j);
+                BytesTools.addAllBytes(result,
+                        ByteBuffer.allocate(ICommonConstants.FLOAT_BYTES)
+                        .putFloat(pointerY).array());
+            }
+        }
+
+        /* for debug */
+        // Log.d(LOG_TAG,
+        // "***************** MotionEvent begin *******************");
+        // Log.d(LOG_TAG,
+        // String.format("action: %d, action masked: %d",
+        // event.getAction(), event.getActionMasked()));
+        // Log.d(LOG_TAG, String.format("pointer count: %d", pointerCount));
+        // Log.d(LOG_TAG,
+        // String.format("action index: %d", event.getActionIndex()));
+        // Log.d(LOG_TAG, String.format("historical count: %d", historyCount));
+        // for (int i = 0; i < pointerCount; i++) {
+        // // "PointerProperties[ID: {0} PointerIndex: {1} ToolType: {2}]"
+        // Log.d(LOG_TAG, String.format("pointer index: %d", i));
+        // Log.d(LOG_TAG, String.format(
+        // "\tPointerProperties[ID: %d ToolType: %d]",
+        // event.getPointerId(i), MotionEvent.TOOL_TYPE_UNKNOWN));
+        // Log.d(LOG_TAG, String.format(
+        // "PointerCoords[X: %f Y: %f Pressure: %f Size: %f]",
+        // event.getX(i), event.getY(i), event.getPressure(i),
+        // event.getSize(i)));
+        // for (int j = 0; j < historyCount; j++) {
+        // // sb.AppendFormat("\thistory: {0} {1}\n", j,
+        // // mHistoricalPointerCoords[i][j].ToString());
+        // Log.d(LOG_TAG,
+        // String.format(
+        // "\thistory: %d PointerCoords[X: %f Y: %f Pressure: %f Size: %f]",
+        // j, event.getHistoricalX(i, j),
+        // event.getHistoricalY(i, j),
+        // event.getHistoricalPressure(i, j),
+        // event.getHistoricalSize(i, j)));
+        // }
+        // }
+        // Log.d(LOG_TAG,
+        // "********************* MotionEvent end **********************");
 
         byte[] data = BytesTools.byteListToArray(result);
-        Log.d(LOG_TAG, BytesTools.ConvertArrayToString(data));
+        // Log.d(LOG_TAG, BytesTools.ConvertArrayToString(data));
         return data;
     }
 
@@ -116,44 +205,44 @@ public class EventTransfer {
         // "Going to handle motion event, action: " + event.getAction());
         if (mTimeMachine == null)
             return;
-        Log.d(LOG_TAG, "X3 action: " + event.getAction() + " actionMasked: "
-                + event.getActionMasked());
-        switch (event.getAction()) {
-        case MotionEvent.ACTION_MOVE:
-            Log.d(LOG_TAG, "ACTION_MOVE: " + "X: " + event.getX() + " Y: "
-                    + event.getY() + " Point Count: " + event.getPointerCount());
-            break;
-        case MotionEvent.ACTION_DOWN:
-            Log.d(LOG_TAG, "ACTION_DOWN: " + "X: " + event.getX() + " Y: "
-                    + event.getY() + " Point Count: " + event.getPointerCount());
-            break;
-        case MotionEvent.ACTION_UP:
-            Log.d(LOG_TAG, "ACTION_UP: " + "X: " + event.getX() + " Y: "
-                    + event.getY() + " Point Count: " + event.getPointerCount());
-            break;
-        case MotionEvent.ACTION_POINTER_UP:
-            Log.d(LOG_TAG,
-                    "ACTION_POINTER_UP: " + "X: " + event.getX() + " Y: "
-                            + event.getY() + " Point Count: "
-                            + event.getPointerCount());
-            break;
-        case MotionEvent.ACTION_POINTER_DOWN:
-            Log.d(LOG_TAG,
-                    "ACTION_POINTER_DOWN: " + "X: " + event.getX() + " Y: "
-                            + event.getY() + " Point Count: "
-                            + event.getPointerCount());
-            break;
-        case MotionEvent.ACTION_CANCEL:
-            Log.d(LOG_TAG, "ACTION_CANCEL: " + "X: " + event.getX() + " Y: "
-                    + event.getY() + " Point Count: " + event.getPointerCount());
-            break;
-        default:
-            Log.d(LOG_TAG, "Default action: " + event.getAction() + " X: "
-                    + event.getX() + " Y: " + event.getY() + " Point Count: "
-                    + event.getPointerCount());
-            break;
-        }
         mTimeMachine.transmit(serializeMotionEvent(event));
+        // Log.d(LOG_TAG, "X3 action: " + event.getAction() + " actionMasked: "
+        // + event.getActionMasked());
+        // switch (event.getAction()) {
+        // case MotionEvent.ACTION_MOVE:
+        // // Log.d(LOG_TAG, "ACTION_MOVE: " + "X: " + event.getX() + " Y: "
+        // // + event.getY() + " Point Count: " + event.getPointerCount());
+        // break;
+        // case MotionEvent.ACTION_DOWN:
+        // // Log.d(LOG_TAG, "ACTION_DOWN: " + "X: " + event.getX() + " Y: "
+        // // + event.getY() + " Point Count: " + event.getPointerCount());
+        // break;
+        // case MotionEvent.ACTION_UP:
+        // // Log.d(LOG_TAG, "ACTION_UP: " + "X: " + event.getX() + " Y: "
+        // // + event.getY() + " Point Count: " + event.getPointerCount());
+        // break;
+        // case MotionEvent.ACTION_POINTER_UP:
+        // // Log.d(LOG_TAG,
+        // // "ACTION_POINTER_UP: " + "X: " + event.getX() + " Y: "
+        // // + event.getY() + " Point Count: "
+        // // + event.getPointerCount());
+        // break;
+        // case MotionEvent.ACTION_POINTER_DOWN:
+        // // Log.d(LOG_TAG,
+        // // "ACTION_POINTER_DOWN: " + "X: " + event.getX() + " Y: "
+        // // + event.getY() + " Point Count: "
+        // // + event.getPointerCount());
+        // break;
+        // case MotionEvent.ACTION_CANCEL:
+        // // Log.d(LOG_TAG, "ACTION_CANCEL: " + "X: " + event.getX() + " Y: "
+        // // + event.getY() + " Point Count: " + event.getPointerCount());
+        // break;
+        // default:
+        // // Log.d(LOG_TAG, "Default action: " + event.getAction() + " X: "
+        // // + event.getX() + " Y: " + event.getY() + " Point Count: "
+        // // + event.getPointerCount());
+        // break;
+        // }
     }
 
     private void handleClickEvent() {

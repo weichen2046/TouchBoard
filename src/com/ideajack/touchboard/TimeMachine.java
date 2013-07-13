@@ -17,8 +17,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import com.ideajack.touchboard.utils.BytesTools;
-
 /**
  * @author Chenwei
  *
@@ -184,7 +182,7 @@ public class TimeMachine {
             return;
         }
 
-        Log.d(LOG_TAG, BytesTools.ConvertArrayToString(data));
+        // Log.d(LOG_TAG, BytesTools.ConvertArrayToString(data));
 
         if (out != null) {
             try {
